@@ -1,0 +1,109 @@
+                                              DAX CODE FOR TASK 1: 
+ WITH MEDIA:
+
+tweetWithMediaviews = IF('SocialMedia (1)'[media views]>0||'SocialMedia (1)'[media engagements]>0 ,"With Media","without media")
+
+URLClicks_WithMedia = CALCULATE(
+    SUM('SocialMedia (1)'[url clicks]),'SocialMedia (1)'[Filteredtweets]=1,
+    'SocialMedia (1)'[tweetWithMediaviews] = "With Media")
+
+UserProfileclicks_media = CALCULATE(
+    SUM('SocialMedia (1)'[user profile clicks]),'SocialMedia (1)'[Filteredtweets]=1,
+    'SocialMedia (1)'[tweetWithMediaviews] = "With Media")
+
+
+Hashtagclicks_Media = CALCULATE(SUM('SocialMedia (1)'[hashtag clicks]),'SocialMedia (1)'[Filteredtweets]=1,'SocialMedia (1)'[tweetWithMediaviews]="With Media")
+                                                            
+    WITH LINKS:
+
+tweetwithlinks = IF('SocialMedia (1)'[permalink clicks]>0||'SocialMedia (1)'[url clicks]>0||'SocialMedia (1)'[user profile clicks]>0||'SocialMedia (1)'[hashtag clicks]>0,"WithLinks","Nolinks")
+
+UrlclicksWithLinks = CALCULATE(
+    SUM('SocialMedia (1)'[url clicks]),'SocialMedia (1)'[Filteredtweets]=1,
+    'SocialMedia (1)'[tweetwithlinks] = "WithLinks")
+
+HashtagClicks_Links = CALCULATE(SUM('SocialMedia (1)'[hashtag clicks]),'SocialMedia (1)'[Filteredtweets]=1,'SocialMedia (1)'[tweetwithlinks]="WithLinks")
+
+userprofileClicks_links = CALCULATE(SUM('SocialMedia (1)'[user profile clicks]),'SocialMedia (1)'[Filteredtweets]=1,'SocialMedia (1)'[tweetwithlinks]="WithLinks")
+
+
+    WITH HASHTAGS:
+
+tweetswithhashtags = IF('SocialMedia (1)'[hashtag clicks]>0,"WithHashtag","withouthashtag")
+
+UrlclicksWithHashtag = CALCULATE(
+    SUM('SocialMedia (1)'[url clicks]),'SocialMedia (1)'[Filteredtweets]=1,
+    'SocialMedia (1)'[tweetswithhashtags] = "WithHashtag")
+
+Hashtagclicks_Hashtag = CALCULATE(SUM('SocialMedia (1)'[hashtag clicks]),'SocialMedia (1)'[Filteredtweets]=1,'SocialMedia (1)'[tweetswithhashtags]="WithHashtag")
+
+userprofileClicks_Hashtag = CALCULATE(SUM('SocialMedia (1)'[user profile clicks]),'SocialMedia (1)'[Filteredtweets]=1,'SocialMedia (1)'[tweetswithhashtags]="WithHashtag")
+
+
+                                                  DAX CODE FOR TASK2
+
+TopTweets = CALCULATETABLE(TOPN(10,ADDCOLUMNS(FILTER('SocialMedia (1)','SocialMedia (1)'[weekdayno] <> 6 && 'SocialMedia (1)'[weekdayno]<> 7&& 'SocialMedia (1)'[Time]>TIME(15,0,0)&&'SocialMedia (1)'[Time]<TIME(18,0,0) &&MOD('SocialMedia (1)'[impressions],2)=0 && MOD('SocialMedia (1)'[Day],2)=1 && 'SocialMedia (1)'[WORD COUNT]<=30),"TotalEngagement",'SocialMedia (1)'[retweets]+'SocialMedia (1)'[likes]),[TotalEngagement],DESC,'SocialMedia (1)'[id],ASC),'SocialMedia (1)'[user profile clicks]) 
+
+                                                  
+
+                                                   DAX CODE FOR TASK 3
+
+AvgEngagementWithMedia = CALCULATE(AVERAGE('SocialMedia (1)'[engagement rate]),'SocialMedia (1)'[ISodddate]=TRUE(),'SocialMedia (1)'[IsEvenengagement]=TRUE(),'SocialMedia (1)'[IsB/w(3&6)]=TRUE(),'SocialMedia (1)'[tweetWmeDia]=TRUE())
+
+AvgEngagewithOutmedia = CALCULATE(AVERAGE('SocialMedia (1)'[engagement rate]),'SocialMedia (1)'[ISodddate] =TRUE(),'SocialMedia (1)'[IsEvenengagement]=TRUE(),'SocialMedia (1)'[IsB/w(3&6)] = TRUE(),'SocialMedia (1)'[tweetWmeDia] = FALSE())
+
+                                                   DAX CODE FOR TASK 4
+
+FilteredTweets = FILTER('SocialMedia (1)','SocialMedia (1)'[Date] >= DATE(2020,6,1) && 'SocialMedia (1)'[Date] <= DATE(2020,8,31) && HOUR('SocialMedia (1)'[Time]) >= 15 && HOUR('SocialMedia (1)'[Time]) <= 18 && MOD('SocialMedia (1)'[Day],2) = 1 && MOD('SocialMedia (1)'[media views] ,2) = 0 && LEN('SocialMedia (1)'[Tweet]) - LEN(SUBSTITUTE('SocialMedia (1)'[Tweet], " ", "")) + 1 < 50)
+
+likesUpMedian = CALCULATE(SUM(FilteredTweets[likes]))
+RepliesUpMedian = CALCULATE(SUM(FilteredTweets[replies]))
+RetweetsUpMedian = CALCULATE(SUM(FilteredTweets[retweets]))
+
+SelectedMetricValues=
+SWITCH(SELECTEDVALUE(MetricTable[Metric]),"Replies",FilteredTweets[RepliesUpMedian],"Retweets“,FilteredTweets[RetweetsUpMedian],"Likes",FilteredTweets[likesUpMedian],0 )
+
+MetricTable = DATATABLE("Metric",STRING,{ {"Replies"} ,{"Retweets"} , {"Likes"} })
+
+                                                    DAX CODE FOR TASK 5 PART 1
+
+T5Filtertweets = FILTER('SocialMedia (1)','SocialMedia (1)'[Time] >= TIME(9,0,0) && 'SocialMedia (1)'[Time] <= TIME(18,0,0) && 'SocialMedia (1)'[weekdayno] <= 5 &&  MOD('SocialMedia (1)'[impressions] , 2 ) = 0 && MOD('SocialMedia (1)'[Date].[Day],2) <> 0 && 'SocialMedia (1)'[WORD COUNT] < 40 )
+
+WithAppEngagementRate = AVERAGEX(FILTER(T5Filtertweets,T5Filtertweets[WithorWithoutApp] = "With APP" && T5Filtertweets[Is(b/w)12&6] = TRUE()),T5Filtertweets[engagemenrate])
+
+WithoutAppEngagementRate = AVERAGEX(FILTER(T5Filtertweets,T5Filtertweets[WithorWithoutApp] = "Without APP" && T5Filtertweets[Is(b/w)12&6] = TRUE()),T5Filtertweets[engagement rate])
+
+WithorWithoutApp = IF(T5Filtertweets[app opens] > 0 ,"With APP", "Without APP")
+ 
+
+                                                   DAX CODE FOR TASK 5 PART 2
+
+T6Filters = FILTER('SocialMedia (1)','SocialMedia (1)'[Time] >= TIME(15,0,0) && 'SocialMedia (1)'[Time] <= TIME(18,0,0) && MOD('SocialMedia (1)'[impressions],2) =0 && MOD('SocialMedia (1)'[Date].[Day] , 2) <> 0 && 'SocialMedia (1)'[WORD COUNT] < 30 )
+
+GroupedTweets = SUMMARIZE(T6Filters,T6Filters[DayofWeek],"Total MediaViews",SUM(T6Filters[media views]),"Total MediaEngagements", SUM(T6Filters[media engagements]))
+
+
+
+                                                  
+                                      
+                                                         
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
